@@ -4,28 +4,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import by.itacademy.javaenterprise.knyazev.dao.TeachersDAO;
+import by.itacademy.javaenterprise.knyazev.dao.exceptions.TeacherExceptionDAO;
 import by.itacademy.javaenterprise.knyazev.entities.Teacher;
 
 public class InformationService {
 	private TeachersDAO teachersDAO;
-	private final Logger logger;
+	private static final Logger logger = LoggerFactory.getLogger(InformationService.class);
 	
 	public InformationService(TeachersDAO teachersDAO) {
 		this.teachersDAO = teachersDAO;
-		logger = LoggerFactory.getLogger(getClass());
 	}
 	
-	public int saveTeacher(Teacher teacher) {
-		return teachersDAO.save(teacher);
-	}
-	
-	public String getTeacherEmailOnId(Integer id) {
-		String email = teachersDAO.find(id).getTeacherDetails().getEMail();
-		if(email == null) {
-			logger.error("Email not found on id=" + id + ". This message will be retune instead email");
-			email = "Email not found on id=" + id;
+	public Long saveTeacher(Teacher teacher) {
+		try {
+			return teachersDAO.save(teacher);
+		} catch (TeacherExceptionDAO e) {
+			logger.error("Error in Long saveTeacher(Teacher teacher) method: " + e.getMessage());
 		}
 		
-		return email;
+		return null;
+	}
+	
+	public String getTeacherEmailOnId(Long id) {
+		try {
+			return teachersDAO.find(id).getTeacherDetails().getEMail();
+		} catch (TeacherExceptionDAO e) {
+			logger.error("Error in String getTeacherEmailOnId(Long id) method: " + e.getMessage());
+			return null;
+		}
 	}
 }

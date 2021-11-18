@@ -29,7 +29,7 @@ public class JpaUtil {
 	}
 	
 	public void closeEntityManagerFactory() {
-		if (entityManagerFactory.isOpen()) {
+		if (entityManagerFactory != null && entityManagerFactory.isOpen()) {
 			entityManagerFactory.close();
 		}
 	}

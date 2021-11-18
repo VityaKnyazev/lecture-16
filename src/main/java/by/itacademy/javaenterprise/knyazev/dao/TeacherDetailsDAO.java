@@ -5,52 +5,48 @@ import javax.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import by.itacademy.javaenterprise.knyazev.dao.exceptions.TeacherDetailsExceptionDAO;
 import by.itacademy.javaenterprise.knyazev.entities.TeacherDetails;
 
-public class TeacherDetailsDAO implements DAO<TeacherDetails> {
-	private EntityManager entityManager;
-	private final Logger logger;
+public class TeacherDetailsDAO extends AbstractDAO<TeacherDetails> {
+	private static final Logger logger = LoggerFactory.getLogger(TeacherDetailsDAO.class);
 
 	public TeacherDetailsDAO(EntityManager entityManager) {
-		this.entityManager = entityManager;
-		logger = LoggerFactory.getLogger(getClass());
+		super(entityManager);
 	}
 
 	@Override
-	public int save(TeacherDetails teacherDetails) {
+	public Long save(TeacherDetails teacherDetails) throws TeacherDetailsExceptionDAO {
 		if (teacherDetails != null) {
 			try {
 				entityManager.getTransaction().begin();
 				entityManager.persist(teacherDetails);
 				entityManager.getTransaction().commit();
-				return 1;
-			} catch (Exception e) {
+				return teacherDetails.getId();
+			} catch (RuntimeException e) {
 				entityManager.getTransaction().rollback();
-				logger.error("Transaction on method int save(TeacherDetails teacherDetails) failed: " + e.getMessage());
+				logger.error("Transaction on method int save(TeacherDetails teacherDetails) failed: " + e.getMessage() + "With name of class exception: " + e.getClass().getCanonicalName());
+				return null;
 			}
 		} else {
-			logger.error("Expected TeacherDetails object. Null was given in method int save(TeacherDetails teacherDetails)");
-		}
-		return 0;
+			throw new TeacherDetailsExceptionDAO("Expected TeacherDetails object. Null was given in method Long save(TeacherDetails teacherDetails)");
+		}		
 	}
 
 	@Override
-	public TeacherDetails find(Integer id) {
-		TeacherDetails teacherDetails = new TeacherDetails();
+	public TeacherDetails find(Long id) throws TeacherDetailsExceptionDAO {
 
-		if (id == null || id < 0) {
-			logger.error("Id should be not null and above zero in method TeacherDetails find(Integer id)");
-			return teacherDetails;
+		if (id == null || id < 0L) {
+			throw new TeacherDetailsExceptionDAO("Id should be not null and above zero in method TeacherDetails find(Long id)");
 		}
 
 		try {
-			teacherDetails = entityManager.find(TeacherDetails.class, id);
+			return entityManager.find(TeacherDetails.class, id);
 		} catch (IllegalArgumentException e) {
-			logger.error(
-					"Can't get TeacherDetails object on id=" + id + "on method TeacherDetails find(Integer id): " + e.getMessage());
+			logger.error("Can't get TeacherDetails object on id=" + id + " on method TeacherDetails find(Integer id): " + e.getMessage() + "with exception class name: " + e.getClass().getCanonicalName());
 		}
 
-		return teacherDetails;
+		return null;
 	}
 
 }

@@ -1,130 +1,132 @@
 package by.itacademy.javaenterprise.knyazev.dao;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.times;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.TransactionRequiredException;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import by.itacademy.javaenterprise.knyazev.entities.Teacher;
+import by.itacademy.javaenterprise.knyazev.dao.exceptions.TeacherDetailsExceptionDAO;
 import by.itacademy.javaenterprise.knyazev.entities.TeacherDetails;
 
 public class TeacherDetailsDAOTests {
 	private EntityManager entityManagerMock;
-	private static EntityTransaction entityTransactionMock;
+	private EntityTransaction entityTransactionMock;
 	private TeacherDetailsDAO teacherDetailsDAO;
-	
-	@BeforeAll
-	public static void setUp() {
-		entityTransactionMock = Mockito.mock(EntityTransaction.class);
-	}
+		
 	
 	@BeforeEach
-	public void setUpBeforeTest() {
+	public void setUpBeforeEachTest() {
 		entityManagerMock = Mockito.mock(EntityManager.class);		
+		entityTransactionMock = Mockito.mock(EntityTransaction.class);
 		teacherDetailsDAO = new TeacherDetailsDAO(entityManagerMock);	
 	}
 	
 	@Test
-	public void whenSaveTeacherDetails() {
+	public void whenSaveTeacherDetails() throws TeacherDetailsExceptionDAO {
 		TeacherDetails teacherDetails = new TeacherDetails();
-		teacherDetails.setId(8);
+		teacherDetails.setId(18L);
 		
 		Mockito.when(entityManagerMock.getTransaction()).thenReturn(entityTransactionMock);
+				
+		Long result = teacherDetailsDAO.save(teacherDetails);
 		
-		int result = teacherDetailsDAO.save(teacherDetails);
-		
-		assertEquals(1, result);
+		assertNotNull(result);
+		assertEquals(18L, result);
+		Mockito.verify(entityManagerMock, times(1)).persist(teacherDetails);
 	}
 	
 	@Test
 	public void whenSaveNullTeacherDetails() {
 		
 		Mockito.when(entityManagerMock.getTransaction()).thenReturn(entityTransactionMock);
-			
-		int result = teacherDetailsDAO.save(null);
-		
-		assertEquals(0, result);
+					
+		assertThrows(TeacherDetailsExceptionDAO.class, () -> teacherDetailsDAO.save(null), "TeacherDetailsExceptionDAO was expected");
 	}
 	
 	@Test
-	public void whenSaveTrowEntityExistsException() {
+	public void whenSaveThrowEntityExistsException() throws TeacherDetailsExceptionDAO {
 				
 		TeacherDetails teacherDetails = new TeacherDetails();
 		
 		Mockito.when(entityManagerMock.getTransaction()).thenReturn(entityTransactionMock);		
-		Mockito.doThrow(EntityExistsException.class).when(entityManagerMock).persist(Mockito.any());
+		Mockito.doThrow(EntityExistsException.class).when(entityManagerMock).persist(Mockito.eq(teacherDetails));
 				
-		int result = teacherDetailsDAO.save(teacherDetails);
+		Long result = teacherDetailsDAO.save(teacherDetails);
+				
+		assertNull(result);		
+		Mockito.verify(entityManagerMock, times(1)).persist(teacherDetails);
 		
-		assertEquals(0, result);
 	}
 	
 	@Test
-	public void whenSaveTrowIllegalArgumentException() {
+	public void whenSaveTrowIllegalArgumentException() throws TeacherDetailsExceptionDAO {
 				
 		TeacherDetails teacherDetails = new TeacherDetails();
 		
 		Mockito.when(entityManagerMock.getTransaction()).thenReturn(entityTransactionMock);
-		Mockito.doThrow(IllegalArgumentException.class).when(entityManagerMock).persist(Mockito.any());
+		Mockito.doThrow(IllegalArgumentException.class).when(entityManagerMock).persist(Mockito.eq(teacherDetails));
 				
-		int result = teacherDetailsDAO.save(teacherDetails);
+		Long result = teacherDetailsDAO.save(teacherDetails);
 		
-		assertEquals(0, result);
+		assertNull(result);
+		Mockito.verify(entityManagerMock, times(1)).persist(teacherDetails);
 	}
 	
 	@Test
-	public void whenSaveThrowTransactionRequiredException() {
+	public void whenSaveThrowTransactionRequiredException() throws TeacherDetailsExceptionDAO {
 				
 		TeacherDetails teacherDetails = new TeacherDetails();
 		
 		Mockito.when(entityManagerMock.getTransaction()).thenReturn(entityTransactionMock);
-		Mockito.doThrow(TransactionRequiredException.class).when(entityManagerMock).persist(Mockito.any());
+		Mockito.doThrow(TransactionRequiredException.class).when(entityManagerMock).persist(Mockito.eq(teacherDetails));
 				
-		int result = teacherDetailsDAO.save(teacherDetails);
+		Long result = teacherDetailsDAO.save(teacherDetails);
 		
-		assertEquals(0, result);
+		assertNull(result);
+		Mockito.verify(entityManagerMock, times(1)).persist(teacherDetails);
 	}
 	
 	@Test
-	public void whenFindTeacherDetails() {
+	public void whenFindTeacherDetails() throws TeacherDetailsExceptionDAO {
 		TeacherDetails teacherDetails = new TeacherDetails();
-		teacherDetails.setId(5);
+		teacherDetails.setId(5L);
 		
-		Integer idForQuery = 5;
+		Long idForQuery = 5L;
 		
 		Mockito.when(entityManagerMock.find(Mockito.<Class<TeacherDetails>>any(), Mockito.eq(idForQuery))).thenReturn(teacherDetails);
 		
-		assertEquals(idForQuery, teacherDetailsDAO.find(idForQuery).getId());
+		assertEquals(teacherDetails, teacherDetailsDAO.find(idForQuery));
 	}
 	
 	@Test
-	public void whenFindTeacherOnNull() {
+	public void whenFindTeacherDetailsOnNull() throws TeacherDetailsExceptionDAO {
 		
-		Integer idForQuery = null;
-		
-		assertEquals(0, teacherDetailsDAO.find(idForQuery).getId());
+		assertThrows(TeacherDetailsExceptionDAO.class, () -> teacherDetailsDAO.find(null), "TeacherDetailsExceptionDAO was expected");
 	}
 	
 	@Test
 	public void whenFindTeacherOnIdBelowZero() {
-		Integer idForQuery = -1;
+		Long idForQuery = -1L;
 		
-		assertEquals(0, teacherDetailsDAO.find(idForQuery).getId());
+		assertThrows(TeacherDetailsExceptionDAO.class, () -> teacherDetailsDAO.find(idForQuery), "TeacherDetailsExceptionDAO was expected");
 	}
 	
 	@Test
-	public void whenFindTeacherTrowIllegalArgumentException() {
-		Integer idForQuery = 12566;
+	public void whenFindTeacherTrowIllegalArgumentException() throws TeacherDetailsExceptionDAO {
+		Long idForQuery = 12566L;
 		
-		Mockito.when(entityManagerMock.find(Mockito.<Class<Teacher>>any(), Mockito.eq(idForQuery))).thenThrow(IllegalArgumentException.class);
+		Mockito.when(entityManagerMock.find(Mockito.<Class<TeacherDetails>>any(), Mockito.eq(idForQuery))).thenThrow(IllegalArgumentException.class);
 		
-		assertEquals(0, teacherDetailsDAO.find(idForQuery).getId());
+		assertNull(teacherDetailsDAO.find(idForQuery));
 	}
 }

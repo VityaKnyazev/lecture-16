@@ -10,26 +10,24 @@ import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 @Entity
 @Table(name = "teacher_details")
 public class TeacherDetails {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-	
-	@Column(name = "subject")
-	private String subject;
-	
-	@Column(name = "email")
+	private Long id;	
+	private String subject;	
 	private String eMail;
 	
 	@Column(name = "school_number")
-	private String schoolNumber;	
+	private int schoolNumber;	
 	
 	@OneToOne(mappedBy = "teacherDetails", fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
 	private Teacher teacher;

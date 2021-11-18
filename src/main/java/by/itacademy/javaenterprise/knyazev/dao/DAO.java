@@ -1,6 +1,8 @@
 package by.itacademy.javaenterprise.knyazev.dao;
 
+import by.itacademy.javaenterprise.knyazev.dao.exceptions.ExceptionDAO;
+
 public interface DAO<T> {
-	int save(T object);
-	T find(Integer id);	
+	Long save(T object) throws ExceptionDAO;
+	T find(Long id) throws ExceptionDAO;	
 }

@@ -6,8 +6,6 @@
 	version="2.1">
 	<persistence-unit name="persistentContext">
 		<description>EntityManager starting context for lecture-16</description>
-		<class>by.itacademy.javaenterprise.knyazev.entities.Teacher</class>
-		<class>by.itacademy.javaenterprise.knyazev.entities.TeacherDetails</class>
 		<properties>
 			<property name="hibernate.dialect"
 				value="org.hibernate.dialect.MySQLDialect" />
